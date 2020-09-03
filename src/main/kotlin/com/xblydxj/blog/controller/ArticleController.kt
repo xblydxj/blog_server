@@ -1,13 +1,12 @@
 package com.xblydxj.blog.controller
 
-import com.xblydxj.blog.bean.Article
-import com.xblydxj.blog.mapper.ArticleDao
-import org.slf4j.LoggerFactory
+import com.alibaba.fastjson.JSONObject
+import com.xblydxj.blog.service.`interface`.ArticleService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.util.logging.Logger
 
 /**
  * @author xblydxj.
@@ -16,26 +15,14 @@ import java.util.logging.Logger
  * Email: xiezhiyong@zhexinit.com
  */
 @RestController
+@RequestMapping("/article")
 class ArticleController {
-    private val logger = LoggerFactory.getLogger(ArticleController::class.java)
 
     @Autowired
-    lateinit var articleDao: ArticleDao
+    lateinit var articleService: ArticleService
 
-    @GetMapping("/test")
-    fun test(): String {
-        val article = Article().apply {
-            comments = 1
-            title = "111"
-            content = "xxxx"
-            reads = 1
-            pictures = "[{\"xxx\":\"ddd\"}]"
-            time = "2020-08-13"
-            type = 1
-        }
-        val id1 = articleDao.insert(article)
-        val id2 = articleDao.updateById(article)
-        logger.info("insert$id1   update$id2")
-        return article.toString()
-    }
+    @GetMapping("/list")
+    fun list(@RequestParam requestParam: Map<String, String?>): JSONObject = articleService.list(requestParam["pages"]?.toLong(), requestParam["count"]?.toLong())
+
+
 }

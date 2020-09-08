@@ -53,6 +53,6 @@ class Article {
     var tags: String? = null
 
     // 分类
-    @TableField("")
+    @TableField("category")
     var category: String? = null
 }

@@ -30,29 +30,25 @@ class ControllerAspect {
     @Around("controllerAspect()")
     fun methodBefore(joinPoint: ProceedingJoinPoint): Any? {
         var requestParams: Map<*, *>? = null
-        var responseParams: JSONObject? = null
+        var responseParams: Response? = null
         val logString = StringBuilder().apply {
-            val beginTime = System.currentTimeMillis()
-            val requestAttributes = RequestContextHolder.getRequestAttributes() as ServletRequestAttributes?
-            append("\n\n    请求地址：").append(requestAttributes?.request?.requestURL?.toString()).append("\n")
-            append("    请求方式：").append(requestAttributes?.request?.method).append("\n")
-            append("    请求方法：").append(joinPoint.signature.toString()).append("\n")
-            joinPoint.args.forEach { if (it is Map<*, *>) requestParams = it }
-            append("    请求参数：").append(JSON.toJSON(requestParams)).append("\n")
             try {
-                if (joinPoint.proceed() is JSONObject) responseParams = joinPoint.proceed() as JSONObject
+                val beginTime = System.currentTimeMillis()
+                val requestAttributes = RequestContextHolder.getRequestAttributes() as ServletRequestAttributes?
+                append("\n\n    请求地址：").append(requestAttributes?.request?.requestURL?.toString()).append("\n")
+                append("    请求方式：").append(requestAttributes?.request?.method).append("\n")
+                append("    请求方法：").append(joinPoint.signature.toString()).append("\n")
+                joinPoint.args.forEach { if (it is Map<*, *>) requestParams = it }
+                append("    请求参数：").append(JSON.toJSON(requestParams)).append("\n")
+                if (joinPoint.proceed() is Response) responseParams = joinPoint.proceed() as Response
+                val endTime = System.currentTimeMillis()
+                append("    耗时：").append(endTime - beginTime).append(" ms\n")
+                append("    返回结果：").append(JSON.toJSON(responseParams)).append("\n")
             } catch (e: Exception) {
-                responseParams = if (e is CommonException) {
-                    JSONObject().apply { put("message", e.message) }
-                } else {
-                    append("\n${e.stackTrace}")
-                    e.printStackTrace()
-                    JSONObject().apply { put("message", "System Error") }
-                }
+                append("\n${e.stackTrace}")
+                e.printStackTrace()
+                failed(101, e.message)
             }
-            val endTime = System.currentTimeMillis()
-            append("    耗时：").append(endTime - beginTime).append(" ms\n")
-            append("    返回结果：").append(JSON.toJSON(responseParams)).append("\n")
         }
         log.info(logString.toString())
         return responseParams

@@ -27,6 +27,7 @@ class ArticleServiceImpl : ArticleService {
 
     override fun list(pages: Long?, count: Long?): JSONObject = JSONObject().apply {
         val iPage: IPage<Article> = articleDao.selectPage(Page<Article>(pages ?: 1, count ?: 10), QueryWrapper<Article>())
+
         put("list", iPage.records)
         put("total", iPage.total)
         put("pageNumber", iPage.size)
